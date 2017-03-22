@@ -15,6 +15,12 @@
 * was war gut was war schlecht
 * wie gehts weiter
 
+##
+
+### good
+* learned new things
+* have something to do at home
+
 # Notizen
 
 jeder bekommt eigenen QR code (druckt den evtl aus). Am ende scannt der veranstaltert die qrcodes die gekommen sind.
