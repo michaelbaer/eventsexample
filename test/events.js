@@ -183,7 +183,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.unbook(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refund(EVENT_ADDRESS, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -207,7 +207,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.unbook.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refund.call(EVENT_ADDRESS, PARTICIPANT, {
                 from: PARTICIPANT2
             });
         }).then(() => {

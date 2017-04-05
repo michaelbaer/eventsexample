@@ -15,9 +15,9 @@
 * was war gut was war schlecht
 * wie gehts weiter
 
-##
+## Bad
 
-### good
+## Good
 * learned new things
 * have something to do at home
 
@@ -35,4 +35,24 @@ interessent meldet sich zu event an
 1 Event in einem Contract
 x Events in einem Contract?
 
+# 2. 05.04
 
+# Retrospective
+
+## Good
+* Focus on one screen
+* layman gets insights into programming
+
+## Bad
+* took no turns typing
+* not enough coding?
+
+## Possible Homework
+
+* leveldb reader von chain zustand (does it work with inmemory chain?) (Axel)
+* How does Migration contract in truffle work
+* try to hack the events contract
+* refund deadline. can't refund after event took place. refunding possibility expires. (Christian)
+* support free events
+* Refactor event to a struct instead of having mapping inside of mapping
+* Find a way to verify participation. Concept? (Jan-Paul)
