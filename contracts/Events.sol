@@ -80,22 +80,17 @@ contract Events {
     /// Removes the sender's booking for given event and refunds the provided
     /// fee. Throws an exception if the sender does not have a valid booking
     /// for the event
-    function unbookMe(address eventInstance) {
-        Event eventToUnbook = events[eventInstance];
-        if (!eventToUnbook.participants[msg.sender].registered) throw;
-        uint amount = eventToUnbook.participants[msg.sender].payment;
-        eventToUnbook.participants[msg.sender].payment = 0;
-        eventToUnbook.participants[msg.sender].registered = false;
-
-        if (!msg.sender.send(amount)) {
-            throw;
-        }
+    function refundMeThroughCancellation(address eventInstance) {
+        performRefund(eventInstance, msg.sender);
     }
 
-    /// Removes the given participant's booking for given event and refunds the
-    /// provided fee. Throws an exception if the sender does not have a valid booking
-    /// for the event
-    function refundThroughCancellation(address eventInstance, address participant) onlyByOrganizer {
+    /// Removes the given participant's booking for given event - to be performed by the organizer
+    function refundParticipantThroughCancellation(address eventInstance, address participant) onlyByOrganizer {
+        performRefund(eventInstance, participant);
+    }
+
+    // Internal function to perform refund
+    function performRefund(address eventInstance, address participant) internal {
         Event eventToRefund = events[eventInstance];
         if (!eventToRefund.participants[participant].registered) throw;
         if (now > eventToRefund.startOfEvent - eventToRefund.deadline * 1 days) throw;

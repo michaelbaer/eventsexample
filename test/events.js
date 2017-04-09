@@ -159,7 +159,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.unbookMe(EVENT_ADDRESS, {
+            return eventContract.refundMeThroughCancellation(EVENT_ADDRESS, {
                 from: PARTICIPANT
             });
         }).then(() => {
@@ -172,11 +172,11 @@ contract('Events', function(accounts) {
         })
     })
 
-    it('participants can not unbook if not booked', () => {
+    it('participants cannot unbook if not booked', () => {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.unbookMe(EVENT_ADDRESS, {
+            return eventContract.refundMeThroughCancellation(EVENT_ADDRESS, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -197,7 +197,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundThroughCancellation(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundParticipantThroughCancellation(EVENT_ADDRESS, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -210,7 +210,7 @@ contract('Events', function(accounts) {
         })
     })
 
-    it('other users can not unbook anyone', () => {
+    it('users can not unbook other users', () => {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
@@ -219,12 +219,8 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundThroughCancellation.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundParticipantThroughCancellation.call(EVENT_ADDRESS, PARTICIPANT, {
                 from: PARTICIPANT2
-            });
-        }).then(() => {
-            return eventContract.refundThroughCancellation.call(EVENT_ADDRESS, PARTICIPANT, {
-                from: ORGANIZER
             });
         }).then(function() {
             assert(false, "refundThroughCancellation() was supposed to throw but did not");
@@ -265,7 +261,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundThroughCancellation(MISSED_EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundParticipantThroughCancellation(MISSED_EVENT_ADDRESS, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(function() {
