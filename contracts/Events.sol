@@ -18,6 +18,7 @@ contract Events {
     struct Event {
       bool exists;
       uint requiredFee;
+      // uint deadline;
       mapping (address => Participant) participants;
     }
 
@@ -63,26 +64,17 @@ contract Events {
         eventToBook.participants[msg.sender].registered = true;
     }
 
-    /// Returns if the sender has a valid booking for the event
-    function amIBooked(address eventInstance) returns (bool) {
-        return events[eventInstance].participants[msg.sender].registered;
+    /// Returns the sender's booking information (subscription status & payment)
+    function myBooking(address eventInstance) returns (bool, uint) {
+        Participant p = events[eventInstance].participants[msg.sender];
+        return (p.registered, p.payment);
     }
 
-    /// Returns the payment of the sender for the event
-    function myPayment(address eventInstance) returns (uint) {
-        return events[eventInstance].participants[msg.sender].payment;
+    /// Returns booking information (subscription status & payment) for any participant
+    function anyBooking(address eventInstance, address participant) onlyByOrganizer returns (bool, uint) {
+        Participant p = events[eventInstance].participants[participant];
+        return (p.registered, p.payment);
     }
-
-    /// Returns if the participant has a valid booking for the event
-    function booked(address eventInstance, address participant) onlyByOrganizer returns (bool) {
-        return events[eventInstance].participants[participant].registered;
-    }
-
-    /// Returns the payment of the participant for the event
-    function payment(address eventInstance, address participant) onlyByOrganizer returns (uint) {
-        return events[eventInstance].participants[participant].payment;
-    }
-
 
     /// Removes the sender's booking for given event and refunds the provided
     /// fee. Throws an exception if the sender does not have a valid booking
