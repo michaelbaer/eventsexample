@@ -5,9 +5,21 @@ pragma solidity ^0.4.4;
 // TODO: Deletion of event
 // TODO: Send $$$ to organizer
 contract Events {
+
     address public organizer;
-    mapping (address => uint) public events;
-    mapping (address => mapping (address => uint)) public participants;
+
+    mapping (address => Event) public events;
+
+    struct Participant {
+      bool registered;
+      uint payment;
+    }
+
+    struct Event {
+      bool exists;
+      uint requiredFee;
+      mapping (address => Participant) participants;
+    }
 
     function Events() {
         organizer = tx.origin;
@@ -19,52 +31,68 @@ contract Events {
     }
 
     modifier eventExists(address eventInstance) {
-        if (events[eventInstance] == 0) throw;
+        if (!events[eventInstance].exists) throw;
         _;
     }
 
     /// Create a new event instance with a required (minimum)
     /// fee each user must provide to create a booking.
     function create(address eventInstance, uint requiredFee) onlyByOrganizer {
-        if (events[eventInstance] > 0) throw;
-        if (requiredFee == 0) throw;
-        events[eventInstance] = requiredFee;
+        if (events[eventInstance].exists) throw;
+        events[eventInstance] = Event({exists: true, requiredFee: requiredFee});
     }
 
-    function exists(address eventInstance) returns (uint) {
-        return events[eventInstance];
+    // Returns true if an event with a given instance exists
+    function exists(address eventInstance) returns (bool) {
+        return events[eventInstance].exists;
+    }
+
+    // Returns fee of an event
+    function fee(address eventInstance) eventExists(eventInstance) returns (uint) {
+        return events[eventInstance].requiredFee;
     }
 
     /// Creates a booking for given event for the message's sender.
     /// The message amount must be equal or higher than the event's fee.
     /// See exists(eventInstance) to get the required fee value.
     function book(address eventInstance) payable eventExists(eventInstance) {
-        if (events[eventInstance] > msg.value) throw;
-        if (participants[eventInstance][msg.sender] != 0) throw;
-        participants[eventInstance][msg.sender] = msg.value;
+        Event eventToBook = events[eventInstance];
+        if (eventToBook.requiredFee > msg.value) throw;
+        if (eventToBook.participants[msg.sender].registered) throw;
+        eventToBook.participants[msg.sender].payment = msg.value;
+        eventToBook.participants[msg.sender].registered = true;
     }
 
-    /// Returns the fee payed by the message's sender for the given event.
-    /// If the sender does not have a valid booking for the event, 0
-    /// is returned
-    function amIBooked(address eventInstance) returns (uint) {
-        return participants[eventInstance][msg.sender];
+    /// Returns if the sender has a valid booking for the event
+    function amIBooked(address eventInstance) returns (bool) {
+        return events[eventInstance].participants[msg.sender].registered;
     }
 
-    /// Returns the fee payed by the given participant for the given event.
-    /// If the participant does not have a valid booking for the event, 0
-    /// is returned
-    function booked(address eventInstance, address participant) onlyByOrganizer returns (uint) {
-        return participants[eventInstance][participant];
+    /// Returns the payment of the sender for the event
+    function myPayment(address eventInstance) returns (uint) {
+        return events[eventInstance].participants[msg.sender].payment;
     }
+
+    /// Returns if the participant has a valid booking for the event
+    function booked(address eventInstance, address participant) onlyByOrganizer returns (bool) {
+        return events[eventInstance].participants[participant].registered;
+    }
+
+    /// Returns the payment of the participant for the event
+    function payment(address eventInstance, address participant) onlyByOrganizer returns (uint) {
+        return events[eventInstance].participants[participant].payment;
+    }
+
 
     /// Removes the sender's booking for given event and refunds the provided
     /// fee. Throws an exception if the sender does not have a valid booking
     /// for the event
     function unbookMe(address eventInstance) {
-        if (participants[eventInstance][msg.sender] == 0) throw;
-        uint amount = participants[eventInstance][msg.sender];
-        participants[eventInstance][msg.sender] = 0;
+        Event eventToUnbook = events[eventInstance];
+        if (!eventToUnbook.participants[msg.sender].registered) throw;
+        uint amount = eventToUnbook.participants[msg.sender].payment;
+        eventToUnbook.participants[msg.sender].payment = 0;
+        eventToUnbook.participants[msg.sender].registered = false;
 
         if (!msg.sender.send(amount)) {
             throw;
@@ -75,9 +103,11 @@ contract Events {
     /// provided fee. Throws an exception if the sender does not have a valid booking
     /// for the event
     function refund(address eventInstance, address participant) onlyByOrganizer {
-        if (participants[eventInstance][participant] == 0) throw;
-        uint amount = participants[eventInstance][participant];
-        participants[eventInstance][participant] = 0;
+        Event eventToRefund = events[eventInstance];
+        if (!eventToRefund.participants[participant].registered) throw;
+        uint amount = eventToRefund.participants[participant].payment;
+        eventToRefund.participants[participant].payment = 0;
+        eventToRefund.participants[participant].registered = false;
 
         if (!participant.send(amount)) {
             throw;
