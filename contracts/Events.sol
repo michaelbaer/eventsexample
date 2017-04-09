@@ -1,6 +1,6 @@
 pragma solidity ^0.4.4;
 
-// TODO: Unbooking by participants can only be done before a certain date
+// TODO: Refunds participant's payment when participant attends the event
 // TODO: Mass unbooking by an organizer to refund all participants who showed up to remove number of messages
 // TODO: Deletion of event
 // TODO: Send $$$ to organizer
@@ -18,7 +18,8 @@ contract Events {
     struct Event {
       bool exists;
       uint requiredFee;
-      // uint deadline;
+      uint256 startOfEvent; // in seconds since the epoch
+      uint deadline; // number of days before the event
       mapping (address => Participant) participants;
     }
 
@@ -38,9 +39,9 @@ contract Events {
 
     /// Create a new event instance with a required (minimum)
     /// fee each user must provide to create a booking.
-    function create(address eventInstance, uint requiredFee) onlyByOrganizer {
+    function create(address eventInstance, uint requiredFee, uint256 startTime, uint deadline) onlyByOrganizer {
         if (events[eventInstance].exists) throw;
-        events[eventInstance] = Event({exists: true, requiredFee: requiredFee});
+        events[eventInstance] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline});
     }
 
     // Returns true if an event with a given instance exists
@@ -94,9 +95,10 @@ contract Events {
     /// Removes the given participant's booking for given event and refunds the
     /// provided fee. Throws an exception if the sender does not have a valid booking
     /// for the event
-    function refund(address eventInstance, address participant) onlyByOrganizer {
+    function refundThroughCancellation(address eventInstance, address participant) onlyByOrganizer {
         Event eventToRefund = events[eventInstance];
         if (!eventToRefund.participants[participant].registered) throw;
+        if (now > eventToRefund.startOfEvent - eventToRefund.deadline * 1 days) throw;
         uint amount = eventToRefund.participants[participant].payment;
         eventToRefund.participants[participant].payment = 0;
         eventToRefund.participants[participant].registered = false;
@@ -105,4 +107,8 @@ contract Events {
             throw;
         }
     }
+
+    /// Refunds participant's payment when participant attends the event
+    function refundThroughAttendance() {}
+
 }

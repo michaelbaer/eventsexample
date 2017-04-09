@@ -1,14 +1,22 @@
 var Events = artifacts.require("./Events.sol");
 
 contract('Events', function(accounts) {
+
     let ORGANIZER = accounts[0];
     let PARTICIPANT = accounts[1];
     let PARTICIPANT2 = accounts[2];
+
     let EVENT_ADDRESS = accounts[3];
     let ZERO_FEE_EVENT_ADDRESS = accounts[4];
-    let UNKNOWN_EVENT_ADDRESS = accounts[3];
+    let UNKNOWN_EVENT_ADDRESS = accounts[5];
+    let MISSED_EVENT_ADDRESS = accounts[6];
 
     let REQUIRED_FEE = 10;
+
+    // one event before cancellation deadline, one event after
+    let START_OF_EVENT_IN_20_DAYS = Date.now() / 1000 + 20*24*3600;
+    let START_OF_EVENT_IN_10_DAYS = Date.now() / 1000 + 10*24*3600;
+    let DEADLINE = 15; // in days
 
     it('sets creator as organizer', () => {
         return Events.deployed().then(eventContract => {
@@ -22,7 +30,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, {
+            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -40,7 +48,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, {
+            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -56,7 +64,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(ZERO_FEE_EVENT_ADDRESS, 0, {
+            return eventContract.create(ZERO_FEE_EVENT_ADDRESS, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -189,7 +197,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refund(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundThroughCancellation(EVENT_ADDRESS, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -211,15 +219,15 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refund.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundThroughCancellation.call(EVENT_ADDRESS, PARTICIPANT, {
                 from: PARTICIPANT2
             });
         }).then(() => {
-            return eventContract.booked.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundThroughCancellation.call(EVENT_ADDRESS, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(function() {
-            assert(false, "booked() was supposed to throw but did not");
+            assert(false, "refundThroughCancellation() was supposed to throw but did not");
         }).catch(function(error) {
             if (error.toString().indexOf("invalid JUMP") == -1) {
                 assert(false, error.toString());
@@ -237,6 +245,31 @@ contract('Events', function(accounts) {
             });
         }).then(function() {
             assert(false, "booked() was supposed to throw but did not");
+        }).catch(function(error) {
+            if (error.toString().indexOf("invalid JUMP") == -1) {
+                assert(false, error.toString());
+            }
+        })
+    })
+
+    it('do not refund if cancellation occurs too late', () => {
+        let eventContract;
+        return Events.deployed().then(contract => {
+            eventContract = contract;
+            return eventContract.create(MISSED_EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE, {
+                from: ORGANIZER
+            });
+        }).then(() => {
+            return eventContract.book(MISSED_EVENT_ADDRESS, {
+                from: PARTICIPANT,
+                value: REQUIRED_FEE
+            });
+        }).then(() => {
+            return eventContract.refundThroughCancellation(MISSED_EVENT_ADDRESS, PARTICIPANT, {
+                from: ORGANIZER
+            });
+        }).then(function() {
+            assert(false, "refundThroughCancellation() was supposed to throw due to the missed deadline but did not");
         }).catch(function(error) {
             if (error.toString().indexOf("invalid JUMP") == -1) {
                 assert(false, error.toString());
