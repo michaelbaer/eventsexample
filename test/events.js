@@ -1,17 +1,23 @@
 var Events = artifacts.require("./Events.sol");
+keccak_256 = require('js-sha3').keccak_256;
 
 contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
     let PARTICIPANT = accounts[1];
     let PARTICIPANT2 = accounts[2];
+    let PARTICIPANT3 = accounts[3];
 
-    let EVENT_ADDRESS = accounts[3];
-    let ZERO_FEE_EVENT_ADDRESS = accounts[4];
-    let UNKNOWN_EVENT_ADDRESS = accounts[5];
-    let MISSED_EVENT_ADDRESS = accounts[6];
+    let EVENT_ADDRESS = accounts[4];
+    let ZERO_FEE_EVENT_ADDRESS = accounts[5];
+    let UNKNOWN_EVENT_ADDRESS = accounts[6];
+    let MISSED_EVENT_ADDRESS = accounts[7];
 
     let REQUIRED_FEE = 10;
+
+    let SECRET = 'This is top secret';
+    // need to add '0x' to make it a hex before passing to contract
+    let HASHED_SECRET = '0x' + keccak_256(SECRET);
 
     // one event before cancellation deadline, one event after
     let START_OF_EVENT_IN_20_DAYS = Date.now() / 1000 + 20*24*3600;
@@ -30,7 +36,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, {
+            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -48,7 +54,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, {
+            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -64,7 +70,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(ZERO_FEE_EVENT_ADDRESS, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE, {
+            return eventContract.create(ZERO_FEE_EVENT_ADDRESS, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -252,7 +258,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(MISSED_EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE, {
+            return eventContract.create(MISSED_EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -268,6 +274,49 @@ contract('Events', function(accounts) {
             assert(false, "refundThroughCancellation() was supposed to throw due to the missed deadline but did not");
         }).catch(function(error) {
             if (error.toString().indexOf("invalid JUMP") == -1) {
+                assert(false, error.toString());
+            }
+        })
+    })
+
+    it('participants get refund when providing the correct event secret', () => {
+        let eventContract;
+        return Events.deployed().then(contract => {
+            eventContract = contract;
+            return eventContract.book(EVENT_ADDRESS, {
+                from: PARTICIPANT3,
+                value: REQUIRED_FEE
+            });
+        }).then(contract => {
+            return eventContract.refundThroughAttendance(EVENT_ADDRESS, SECRET, {
+                from: PARTICIPANT3
+            });
+        }).then(() => {
+            return eventContract.myBooking.call(EVENT_ADDRESS, {
+                from: PARTICIPANT3
+            });
+        }).then(myBooking => {
+            assert.equal(false, myBooking[0]);
+            assert.equal(0, myBooking[1]);
+        })
+    })
+
+    it('participants get no refund when providing the wrong event secret', () => {
+        let eventContract;
+        return Events.deployed().then(contract => {
+            eventContract = contract;
+            return eventContract.book(EVENT_ADDRESS, {
+                from: PARTICIPANT3,
+                value: REQUIRED_FEE
+            });
+        }).then(contract => {
+            return eventContract.refundThroughAttendance(EVENT_ADDRESS, 'wrong', {
+                from: PARTICIPANT3
+            });
+        }).then(function() {
+            assert(false, 'refundThroughAttendance() was supposed to throw but did not');
+        }).catch(function(error) {
+            if (error.toString().indexOf('invalid JUMP') == -1) {
                 assert(false, error.toString());
             }
         })
