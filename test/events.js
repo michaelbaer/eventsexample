@@ -8,10 +8,10 @@ contract('Events', function(accounts) {
     let PARTICIPANT2 = accounts[2];
     let PARTICIPANT3 = accounts[3];
 
-    let EVENT_ADDRESS = accounts[4];
-    let ZERO_FEE_EVENT_ADDRESS = accounts[5];
-    let UNKNOWN_EVENT_ADDRESS = accounts[6];
-    let MISSED_EVENT_ADDRESS = accounts[7];
+    let EVENT_ID = 1;
+    let ZERO_FEE_EVENT_ID = 2;
+    let UNKNOWN_EVENT_ID = 3;
+    let MISSED_EVENT_ID = 4;
 
     let REQUIRED_FEE = 10;
 
@@ -36,15 +36,15 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.exists.call(EVENT_ADDRESS);
+            return eventContract.exists.call(EVENT_ID);
         }).then(exists => {
           assert.equal(true, exists);
         }).then(() => {
-            return eventContract.fee.call(EVENT_ADDRESS);
+            return eventContract.fee.call(EVENT_ID);
         }).then(fee => {
             assert.equal(fee, REQUIRED_FEE);
         })
@@ -54,7 +54,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -70,11 +70,11 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(ZERO_FEE_EVENT_ADDRESS, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(ZERO_FEE_EVENT_ID, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.fee.call(ZERO_FEE_EVENT_ADDRESS);
+            return eventContract.fee.call(ZERO_FEE_EVENT_ID);
         }).then(fee => {
             assert.equal(0, fee);
         })
@@ -84,12 +84,12 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ADDRESS, {
+            return eventContract.myBooking.call(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(myBooking => {
@@ -102,7 +102,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE
             });
@@ -119,7 +119,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE / 2
             });
@@ -136,7 +136,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.anyBooking.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.anyBooking.call(EVENT_ID, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(booking => {
@@ -149,7 +149,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.anyBooking.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.anyBooking.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT2
             });
         }).then(function() {
@@ -165,11 +165,11 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.refundMeThroughCancellation(EVENT_ADDRESS, {
+            return eventContract.refundMeThroughCancellation(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ADDRESS, {
+            return eventContract.myBooking.call(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(myBooking => {
@@ -182,7 +182,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.refundMeThroughCancellation(EVENT_ADDRESS, {
+            return eventContract.refundMeThroughCancellation(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -198,16 +198,16 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundParticipantThroughCancellation(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundParticipantThroughCancellation(EVENT_ID, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ADDRESS, {
+            return eventContract.myBooking.call(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(myBooking => {
@@ -220,12 +220,12 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundParticipantThroughCancellation.call(EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundParticipantThroughCancellation.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT2
             });
         }).then(function() {
@@ -241,7 +241,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(UNKNOWN_EVENT_ADDRESS, {
+            return eventContract.book(UNKNOWN_EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE
             });
@@ -258,16 +258,16 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(MISSED_EVENT_ADDRESS, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(MISSED_EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.book(MISSED_EVENT_ADDRESS, {
+            return eventContract.book(MISSED_EVENT_ID, {
                 from: PARTICIPANT,
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundParticipantThroughCancellation(MISSED_EVENT_ADDRESS, PARTICIPANT, {
+            return eventContract.refundParticipantThroughCancellation(MISSED_EVENT_ID, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(function() {
@@ -283,16 +283,16 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT3,
                 value: REQUIRED_FEE
             });
         }).then(contract => {
-            return eventContract.refundThroughAttendance(EVENT_ADDRESS, SECRET, {
+            return eventContract.refundThroughAttendance(EVENT_ID, SECRET, {
                 from: PARTICIPANT3
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ADDRESS, {
+            return eventContract.myBooking.call(EVENT_ID, {
                 from: PARTICIPANT3
             });
         }).then(myBooking => {
@@ -305,12 +305,12 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.book(EVENT_ADDRESS, {
+            return eventContract.book(EVENT_ID, {
                 from: PARTICIPANT3,
                 value: REQUIRED_FEE
             });
         }).then(contract => {
-            return eventContract.refundThroughAttendance(EVENT_ADDRESS, 'wrong', {
+            return eventContract.refundThroughAttendance(EVENT_ID, 'wrong', {
                 from: PARTICIPANT3
             });
         }).then(function() {
