@@ -9,3 +9,7 @@
 # Run tests
 
    npm test
+
+# Notes
+
+index.html needs to be served via a webserver
