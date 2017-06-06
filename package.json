@@ -2,12 +2,14 @@
   "name": "myevents",
   "version": "1.0.0",
   "license": "ISC",
-  "scripts" : {
+  "scripts": {
     "test": "./node_modules/truffle/cli.js test",
-    "chain": "./node_modules/ethereumjs-testrpc/bin/testrpc"
+    "chain": "./scripts/fakechain.sh",
+    "ui": "./scripts/run.sh"
   },
   "devDependencies": {
-    "ethereumjs-testrpc": "3.0.3",
+    "ethereumjs-testrpc": "3.0.5",
+    "http-server": "0.10.0",
     "truffle": "3.1.2"
   }
 }
