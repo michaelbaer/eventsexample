@@ -22,7 +22,7 @@ contract('Events', function(accounts) {
     // one event before cancellation deadline, one event after
     let START_OF_EVENT_IN_20_DAYS = Date.now() / 1000 + 20*24*3600;
     let START_OF_EVENT_IN_10_DAYS = Date.now() / 1000 + 10*24*3600;
-    let DEADLINE = 15; // in days
+    let DEADLINE_IN_DAYS = 15;
 
     it('sets creator as organizer', () => {
         return Events.deployed().then(eventContract => {
@@ -36,7 +36,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -54,7 +54,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -70,7 +70,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(ZERO_FEE_EVENT_ID, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(ZERO_FEE_EVENT_ID, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -258,7 +258,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(MISSED_EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE, HASHED_SECRET, {
+            return eventContract.create(MISSED_EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
                 from: ORGANIZER
             });
         }).then(() => {
