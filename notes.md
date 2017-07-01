@@ -56,3 +56,27 @@ x Events in einem Contract?
 * support free events
 * Refactor event to a struct instead of having mapping inside of mapping
 * Find a way to verify participation. Concept? (Jan-Paul)
+
+# 27 Jun
+
+## Expectations
+
+* progress on the project. more programming than usual
+* future of the project
+* testing
+
+## Review
+
+* focussed
+* multiple people typed/used the keyboard.
+
+## Homework
+
+* tests should not be able to depend on each other (split into multiple `contract`)
+* remove hashed secret until functionality is properly discussed
+* is `exists` really necessary? we can replace it with retrieving the whole event
+*     it('organizer can create event, event has non-zero fee', () => { tests two concepts at once
+* check out https://truffle-box.github.io/
+* remove id from events (we can use a counter (increment) in the contract). Not using a counter due to possible race conditions on who gets which counters (need to wait a few confirmations to be sure what your id (counter) is). Solution: use a hash, some combination
+* after migrate and deploy the tx count is 4. why not 2?
+* fix the bug "estimateGas" and explain how it was solved (Axel)
