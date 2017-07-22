@@ -2,7 +2,7 @@ var Events = artifacts.require("./Events.sol");
 keccak_256 = require('js-sha3').keccak_256;
 
 let assertException = function(error) {
-  if (error.toString().indexOf("invalid JUMP") == -1) {
+  if (error.toString().indexOf("invalid opcode") == -1) {
     assert(false, error.toString());
   }
 }
