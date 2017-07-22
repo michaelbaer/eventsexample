@@ -128,32 +128,16 @@ contract('Events', function(accounts) {
         });
     })
 
-    it('organizer can see other participants', () => {
+    it('users can see other participants', () => {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.anyBooking.call(EVENT_ID, PARTICIPANT, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(booking => {
             assert.equal(true, booking[0]);
             assert.equal(REQUIRED_FEE, booking[1]);
-        })
-    })
-
-    it('other users can not see participants', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.anyBooking.call(EVENT_ID, PARTICIPANT, {
-                from: PARTICIPANT2
-            });
-        }).then(function() {
-            assert(false, "booked() was supposed to throw but did not");
-        }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
         })
     })
 

@@ -66,7 +66,7 @@ contract Events {
     }
 
     /// Returns booking information (subscription status & payment) for any participant
-    function anyBooking(uint eventId, address participant) onlyByOrganizer returns (bool, uint) {
+    function bookingFor(uint eventId, address participant) returns (bool, uint) {
         Participant p = events[eventId].participants[participant];
         return (p.registered, p.payment);
     }
