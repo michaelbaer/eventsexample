@@ -218,7 +218,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(contract => {
-            return eventContract.refundThroughAttendance(EVENT_ID, SECRET, {
+            return eventContract.verifyAttendance(EVENT_ID, SECRET, {
                 from: PARTICIPANT3
             });
         }).then(() => {
@@ -240,11 +240,11 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(contract => {
-            return eventContract.refundThroughAttendance(EVENT_ID, 'wrong', {
+            return eventContract.verifyAttendance(EVENT_ID, 'wrong', {
                 from: PARTICIPANT3
             });
         }).then(function() {
-            assert(false, 'refundThroughAttendance() was supposed to throw but did not');
+            assert(false, 'verifyAttendance() was supposed to throw but did not');
         }).catch(function(error) {
             assertException(error)
         })

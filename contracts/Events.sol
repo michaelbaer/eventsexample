@@ -89,8 +89,7 @@ contract Events {
         }
     }
 
-    // Refunds participant's payment when participant attends the event
-    function refundThroughAttendance(uint eventId, string secret) {
+    function verifyAttendance(uint eventId, string secret) {
         performRefund(eventId, msg.sender, secret);
     }
 }
