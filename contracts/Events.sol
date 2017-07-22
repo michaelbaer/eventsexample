@@ -1,4 +1,4 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.11;
 
 // TODO: Mass unbooking by an organizer to refund all participants who showed up to remove number of messages
 // TODO: Deletion of event
