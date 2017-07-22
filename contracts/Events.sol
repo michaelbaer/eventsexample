@@ -32,32 +32,32 @@ contract Events {
         _;
     }
 
-    modifier eventExists(uint eventInstance) {
-        if (!events[eventInstance].exists) throw;
+    modifier eventExists(uint eventId) {
+        if (!events[eventId].exists) throw;
         _;
     }
 
     /// Create a new event instance with a required (minimum)
     /// fee each user must provide to create a booking.
-    function create(uint eventInstance, uint requiredFee, uint256 startTime, uint deadline, bytes32 hashedSecret) onlyByOrganizer {
-        if (events[eventInstance].exists) throw;
-        events[eventInstance] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline, hashedSecret: hashedSecret});
+    function create(uint eventId, uint requiredFee, uint256 startTime, uint deadline, bytes32 hashedSecret) onlyByOrganizer {
+        if (events[eventId].exists) throw;
+        events[eventId] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline, hashedSecret: hashedSecret});
     }
 
     // Returns true if an event with a given instance exists
-    function exists(uint eventInstance) returns (bool) {
-        return events[eventInstance].exists;
+    function exists(uint eventId) returns (bool) {
+        return events[eventId].exists;
     }
 
-    function feeOf(uint eventInstance) eventExists(eventInstance) returns (uint) {
-        return events[eventInstance].requiredFee;
+    function feeOf(uint eventId) eventExists(eventId) returns (uint) {
+        return events[eventId].requiredFee;
     }
 
     /// Creates a booking for given event for the message's sender.
     /// The message amount must be equal or higher than the event's fee.
     /// See exists(eventInstance) to get the required fee value.
-    function book(uint eventInstance) payable eventExists(eventInstance) {
-        Event eventToBook = events[eventInstance];
+    function book(uint eventId) payable eventExists(eventId) {
+        Event eventToBook = events[eventId];
         if (eventToBook.requiredFee > msg.value) throw;
         if (eventToBook.participants[msg.sender].registered) throw;
         eventToBook.participants[msg.sender].payment = msg.value;
@@ -65,32 +65,32 @@ contract Events {
     }
 
     /// Returns the sender's booking information (subscription status & payment)
-    function myBooking(uint eventInstance) returns (bool, uint) {
-        Participant p = events[eventInstance].participants[msg.sender];
+    function myBooking(uint eventId) returns (bool, uint) {
+        Participant p = events[eventId].participants[msg.sender];
         return (p.registered, p.payment);
     }
 
     /// Returns booking information (subscription status & payment) for any participant
-    function anyBooking(uint eventInstance, address participant) onlyByOrganizer returns (bool, uint) {
-        Participant p = events[eventInstance].participants[participant];
+    function anyBooking(uint eventId, address participant) onlyByOrganizer returns (bool, uint) {
+        Participant p = events[eventId].participants[participant];
         return (p.registered, p.payment);
     }
 
     /// Removes the sender's booking for given event and refunds the provided
     /// fee. Throws an exception if the sender does not have a valid booking
     /// for the event
-    function refundMeThroughCancellation(uint eventInstance) {
-        performRefund(eventInstance, msg.sender, "");
+    function refundMeThroughCancellation(uint eventId) {
+        performRefund(eventId, msg.sender, "");
     }
 
     /// Removes the given participant's booking for given event - to be performed by the organizer
-    function refundParticipantThroughCancellation(uint eventInstance, address participant) onlyByOrganizer {
-        performRefund(eventInstance, participant, "");
+    function refundParticipantThroughCancellation(uint eventId, address participant) onlyByOrganizer {
+        performRefund(eventId, participant, "");
     }
 
     // Internal function to perform refund
-    function performRefund(uint eventInstance, address participant, string secret) internal {
-        Event eventToRefund = events[eventInstance];
+    function performRefund(uint eventId, address participant, string secret) internal {
+        Event eventToRefund = events[eventId];
         if (!eventToRefund.participants[participant].registered) throw;
         // refund by cancellation in time
         if (bytes(secret).length == 0 && now > eventToRefund.startOfEvent - eventToRefund.deadline * 1 days) throw;
@@ -106,7 +106,7 @@ contract Events {
     }
 
     // Refunds participant's payment when participant attends the event
-    function refundThroughAttendance(uint eventInstance, string secret) {
-        performRefund(eventInstance, msg.sender, secret);
+    function refundThroughAttendance(uint eventId, string secret) {
+        performRefund(eventId, msg.sender, secret);
     }
 }
