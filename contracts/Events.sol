@@ -72,11 +72,6 @@ contract Events {
         performRefund(eventId, msg.sender, "");
     }
 
-    /// Removes the given participant's booking for given event - to be performed by the organizer
-    function refundParticipantThroughCancellation(uint eventId, address participant) onlyByOrganizer {
-        performRefund(eventId, participant, "");
-    }
-
     // Internal function to perform refund
     function performRefund(uint eventId, address participant, string secret) internal {
         Event eventToRefund = events[eventId];

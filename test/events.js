@@ -174,49 +174,6 @@ contract('Events', function(accounts) {
         });
     })
 
-    it('organizer can unbook anyone', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.book(EVENT_ID, {
-                from: PARTICIPANT,
-                value: REQUIRED_FEE
-            });
-        }).then(() => {
-            return eventContract.refundParticipantThroughCancellation(EVENT_ID, PARTICIPANT, {
-                from: ORGANIZER
-            });
-        }).then(() => {
-            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
-                from: PARTICIPANT
-            });
-        }).then(booking => {
-            assert.equal(false, booking[0]);
-            assert.equal(0, booking[1]);
-        })
-    })
-
-    it('users can not unbook other users', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.book(EVENT_ID, {
-                from: PARTICIPANT,
-                value: REQUIRED_FEE
-            });
-        }).then(() => {
-            return eventContract.refundParticipantThroughCancellation.call(EVENT_ID, PARTICIPANT, {
-                from: PARTICIPANT2
-            });
-        }).then(function() {
-            assert(false, "refundThroughCancellation() was supposed to throw but did not");
-        }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
-        });
-    })
-
     it('participants cannot book to events that do not exist', () => {
         let eventContract;
         return Events.deployed().then(contract => {
@@ -247,8 +204,8 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundParticipantThroughCancellation(MISSED_EVENT_ID, PARTICIPANT, {
-                from: ORGANIZER
+            return eventContract.refundMeThroughCancellation(MISSED_EVENT_ID, {
+                from: PARTICIPANT
             });
         }).then(function() {
             assert(false, "refundThroughCancellation() was supposed to throw due to the missed deadline but did not");
