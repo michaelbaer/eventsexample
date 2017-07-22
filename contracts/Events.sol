@@ -44,11 +44,6 @@ contract Events {
         events[eventId] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline, hashedSecret: hashedSecret});
     }
 
-    // Returns true if an event with a given instance exists
-    function exists(uint eventId) returns (bool) {
-        return events[eventId].exists;
-    }
-
     function feeOf(uint eventId) eventExists(eventId) returns (uint) {
         return events[eventId].requiredFee;
     }
