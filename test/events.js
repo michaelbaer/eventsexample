@@ -1,6 +1,11 @@
 var Events = artifacts.require("./Events.sol");
 keccak_256 = require('js-sha3').keccak_256;
 
+let assertException = function(error) {
+  if (error.toString().indexOf("invalid JUMP") == -1) {
+    assert(false, error.toString());
+  }
+}
 contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
@@ -56,9 +61,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "create() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -105,9 +108,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "book() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -122,9 +123,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "book() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -168,9 +167,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "unbookMe() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -185,9 +182,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "booked() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         })
     })
 
@@ -210,9 +205,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "refundThroughCancellation() was supposed to throw due to the missed deadline but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         })
     })
 
@@ -253,9 +246,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, 'refundThroughAttendance() was supposed to throw but did not');
         }).catch(function(error) {
-            if (error.toString().indexOf('invalid JUMP') == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         })
     })
 });
