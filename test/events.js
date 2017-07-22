@@ -10,7 +10,6 @@ contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
     let PARTICIPANT = accounts[1];
-    let PARTICIPANT2 = accounts[2];
     let PARTICIPANT3 = accounts[3];
 
     let EVENT_ID = 1;
