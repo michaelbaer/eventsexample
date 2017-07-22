@@ -28,19 +28,19 @@ contract Events {
     }
 
     modifier onlyByOrganizer() {
-        if (msg.sender != organizer) throw;
+        require(msg.sender == organizer);
         _;
     }
 
     modifier eventExists(uint eventId) {
-        if (!events[eventId].exists) throw;
+        require(events[eventId].exists);
         _;
     }
 
     /// Create a new event instance with a required (minimum)
     /// fee each user must provide to create a booking.
     function create(uint eventId, uint requiredFee, uint startTime, uint deadline, bytes32 hashedSecret) onlyByOrganizer {
-        if (events[eventId].exists) throw;
+        require(!events[eventId].exists);
         events[eventId] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline, hashedSecret: hashedSecret});
     }
 
@@ -53,8 +53,8 @@ contract Events {
     /// See exists(eventInstance) to get the required fee value.
     function book(uint eventId) payable eventExists(eventId) {
         Event eventToBook = events[eventId];
-        if (eventToBook.requiredFee > msg.value) throw;
-        if (eventToBook.participants[msg.sender].registered) throw;
+        require(eventToBook.requiredFee <= msg.value);
+        require(!eventToBook.participants[msg.sender].registered);
         eventToBook.participants[msg.sender].payment = msg.value;
         eventToBook.participants[msg.sender].registered = true;
     }
@@ -71,7 +71,7 @@ contract Events {
 
     function performRefund(uint eventId, address participant, string secret) internal {
         Event eventToRefund = events[eventId];
-        if (!eventToRefund.participants[participant].registered) throw;
+        require(eventToRefund.participants[participant].registered);
         // refund by cancellation in time
         if (bytes(secret).length == 0 && now > eventToRefund.startOfEvent - eventToRefund.deadline * 1 days) throw;
         // refund by knowing the event's secret
@@ -80,9 +80,7 @@ contract Events {
         eventToRefund.participants[participant].payment = 0;
         eventToRefund.participants[participant].registered = false;
 
-        if (!participant.send(amount)) {
-            throw;
-        }
+        participant.transfer(amount);
     }
 
     function verifyAttendance(uint eventId, string secret) {
