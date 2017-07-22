@@ -44,7 +44,7 @@ contract('Events', function(accounts) {
         }).then(exists => {
           assert.equal(true, exists);
         }).then(() => {
-            return eventContract.fee.call(EVENT_ID);
+            return eventContract.feeOf.call(EVENT_ID);
         }).then(fee => {
             assert.equal(fee, REQUIRED_FEE);
         })
@@ -74,7 +74,7 @@ contract('Events', function(accounts) {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.fee.call(ZERO_FEE_EVENT_ID);
+            return eventContract.feeOf.call(ZERO_FEE_EVENT_ID);
         }).then(fee => {
             assert.equal(0, fee);
         })

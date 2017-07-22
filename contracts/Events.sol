@@ -49,8 +49,7 @@ contract Events {
         return events[eventInstance].exists;
     }
 
-    // Returns fee of an event
-    function fee(uint eventInstance) eventExists(eventInstance) returns (uint) {
+    function feeOf(uint eventInstance) eventExists(eventInstance) returns (uint) {
         return events[eventInstance].requiredFee;
     }
 
