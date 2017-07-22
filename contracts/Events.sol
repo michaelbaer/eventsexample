@@ -65,14 +65,10 @@ contract Events {
         return (p.registered, p.payment);
     }
 
-    /// Removes the sender's booking for given event and refunds the provided
-    /// fee. Throws an exception if the sender does not have a valid booking
-    /// for the event
-    function refundMeThroughCancellation(uint eventId) {
+    function cancelAttendance(uint eventId) {
         performRefund(eventId, msg.sender, "");
     }
 
-    // Internal function to perform refund
     function performRefund(uint eventId, address participant, string secret) internal {
         Event eventToRefund = events[eventId];
         if (!eventToRefund.participants[participant].registered) throw;

@@ -144,7 +144,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.refundMeThroughCancellation(EVENT_ID, {
+            return eventContract.cancelAttendance(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(() => {
@@ -161,7 +161,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.refundMeThroughCancellation(EVENT_ID, {
+            return eventContract.cancelAttendance(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -199,7 +199,7 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundMeThroughCancellation(MISSED_EVENT_ID, {
+            return eventContract.cancelAttendance(MISSED_EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(function() {
