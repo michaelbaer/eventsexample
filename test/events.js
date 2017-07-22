@@ -85,12 +85,12 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT
             });
-        }).then(myBooking => {
-            assert.equal(true, myBooking[0]);
-            assert.equal(REQUIRED_FEE, myBooking[1]);
+        }).then(booking => {
+            assert.equal(true, booking[0]);
+            assert.equal(REQUIRED_FEE, booking[1]);
         })
     })
 
@@ -149,12 +149,12 @@ contract('Events', function(accounts) {
                 from: PARTICIPANT
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT
             });
-        }).then(myBooking => {
-            assert.equal(false, myBooking[0]);
-            assert.equal(0, myBooking[1]);
+        }).then(booking => {
+            assert.equal(false, booking[0]);
+            assert.equal(0, booking[1]);
         })
     })
 
@@ -187,12 +187,12 @@ contract('Events', function(accounts) {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT
             });
-        }).then(myBooking => {
-            assert.equal(false, myBooking[0]);
-            assert.equal(0, myBooking[1]);
+        }).then(booking => {
+            assert.equal(false, booking[0]);
+            assert.equal(0, booking[1]);
         })
     })
 
@@ -272,12 +272,12 @@ contract('Events', function(accounts) {
                 from: PARTICIPANT3
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT3, {
                 from: PARTICIPANT3
             });
-        }).then(myBooking => {
-            assert.equal(false, myBooking[0]);
-            assert.equal(0, myBooking[1]);
+        }).then(booking => {
+            assert.equal(false, booking[0]);
+            assert.equal(0, booking[1]);
         })
     })
 

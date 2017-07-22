@@ -59,12 +59,6 @@ contract Events {
         eventToBook.participants[msg.sender].registered = true;
     }
 
-    /// Returns the sender's booking information (subscription status & payment)
-    function myBooking(uint eventId) returns (bool, uint) {
-        Participant p = events[eventId].participants[msg.sender];
-        return (p.registered, p.payment);
-    }
-
     /// Returns booking information (subscription status & payment) for any participant
     function bookingFor(uint eventId, address participant) returns (bool, uint) {
         Participant p = events[eventId].participants[participant];
