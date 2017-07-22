@@ -17,7 +17,7 @@ contract Events {
     struct Event {
       bool exists;
       uint requiredFee;
-      uint256 startOfEvent; // in seconds since the epoch
+      uint startOfEvent; // in seconds since the epoch
       uint deadline; // number of days before the event
       bytes32 hashedSecret; // keccak256(secret) to be used for attendance verification
       mapping (address => Participant) participants;
@@ -39,7 +39,7 @@ contract Events {
 
     /// Create a new event instance with a required (minimum)
     /// fee each user must provide to create a booking.
-    function create(uint eventId, uint requiredFee, uint256 startTime, uint deadline, bytes32 hashedSecret) onlyByOrganizer {
+    function create(uint eventId, uint requiredFee, uint startTime, uint deadline, bytes32 hashedSecret) onlyByOrganizer {
         if (events[eventId].exists) throw;
         events[eventId] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline, hashedSecret: hashedSecret});
     }
