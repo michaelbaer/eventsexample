@@ -38,7 +38,9 @@ contract('Events', function(accounts) {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.feeOf.call(EVENT_ID);
+            return eventContract.eventCounter.call();
+        }).then(eventId => {
+            return eventContract.feeOf.call(eventId);
         }).then(fee => {
             assert.equal(fee, REQUIRED_FEE);
         })

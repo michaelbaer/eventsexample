@@ -2,7 +2,7 @@ pragma solidity ^0.4.11;
 
 contract Events {
 
-    uint eventCounter;
+    uint public eventCounter;
 
     address public organizer;
 
