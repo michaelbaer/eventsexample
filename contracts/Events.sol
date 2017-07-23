@@ -63,7 +63,7 @@ contract Events {
         Event eventToRefund = events[eventId];
         require(eventToRefund.participants[participant].registered);
         // refund by cancellation in time
-        if (now > eventToRefund.startOfEvent - eventToRefund.deadline * 1 days) throw;
+        require(now <= eventToRefund.startOfEvent - eventToRefund.deadline * 1 days);
         uint amount = eventToRefund.participants[participant].payment;
         eventToRefund.participants[participant].payment = 0;
         eventToRefund.participants[participant].registered = false;
