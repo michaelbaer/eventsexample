@@ -28,6 +28,11 @@ contract Events {
         _;
     }
 
+    modifier participantIsRegistered(uint eventId, address participant) {
+        require(events[eventId].participants[participant].registered);
+        _;
+    }
+
     modifier eventExists(uint eventId) {
         require(events[eventId].exists);
         _;
@@ -59,9 +64,8 @@ contract Events {
         performRefund(eventId, msg.sender);
     }
 
-    function performRefund(uint eventId, address participant) internal {
+    function performRefund(uint eventId, address participant) participantIsRegistered(eventId, participant) internal {
         Event eventToRefund = events[eventId];
-        require(eventToRefund.participants[participant].registered);
         // refund by cancellation in time
         require(now <= eventToRefund.startOfEvent - eventToRefund.deadline * 1 days);
         uint amount = eventToRefund.participants[participant].payment;
