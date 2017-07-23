@@ -5,6 +5,11 @@ let assertException = function(error) {
     assert(false, error.toString());
   }
 }
+let createEvent = function(eventContract, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, ORGANIZER) {
+    return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, {
+        from: ORGANIZER
+    });
+}
 contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
@@ -181,13 +186,11 @@ contract('Events', function(accounts) {
         })
     })
 
-    it('do not refund if cancellation occurs too late', () => {
+    it('does not refund if cancellation occurs too late', () => {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, {
-                from: ORGANIZER
-            });
+            return createEvent(eventContract, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, ORGANIZER)
         }).then(() => {
             return eventContract.book(MISSED_EVENT_ID, {
                 from: PARTICIPANT,
@@ -204,4 +207,49 @@ contract('Events', function(accounts) {
         })
     })
 
+    it('does not allow a participant to verify her attendance', () => {
+        let eventContract;
+        let eventId;
+        return Events.deployed().then(contract => {
+            eventContract = contract;
+            return createEvent(eventContract, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, ORGANIZER)
+        }).then(() => {
+            return eventContract.eventCounter.call();
+        }).then(id => {
+            eventId = id;
+            return eventContract.book(eventId, {
+                from: PARTICIPANT,
+                value: REQUIRED_FEE
+            });
+        }).then(() => {
+            return eventContract.verifyAttendance(eventId, PARTICIPANT, {
+                from: PARTICIPANT
+            });
+        }).then(() => {
+            assert(false, 'was supposed to throw');
+        }).catch(error => {
+            assertException(error)
+        })
+    })
+
+    it('does not allow the organizer to verify the attendance of someone who is not registered', () => {
+        let eventContract;
+        let eventId;
+        return Events.deployed().then(contract => {
+            eventContract = contract;
+            return createEvent(eventContract, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, ORGANIZER)
+        }).then(() => {
+            return eventContract.eventCounter.call();
+        }).then(id => {
+            eventId = id;
+        }).then(() => {
+            return eventContract.verifyAttendance(eventId, PARTICIPANT, {
+                from: ORGANIZER
+            });
+        }).then(() => {
+            assert(false, 'was supposed to throw');
+        }).catch(error => {
+            assertException(error)
+        })
+    })
 });
