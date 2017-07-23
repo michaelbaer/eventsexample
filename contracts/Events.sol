@@ -78,7 +78,6 @@ contract Events {
         participant.transfer(amount);
     }
 
-    function verifyAttendance(uint eventId, address participant) participantIsRegistered(eventId, participant) {
-        performRefund(eventId, msg.sender);
+    function verifyAttendance(uint eventId, address participant) onlyByOrganizer participantIsRegistered(eventId, participant) {
     }
 }
