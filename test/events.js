@@ -185,7 +185,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(MISSED_EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, {
+            return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, {
                 from: ORGANIZER
             });
         }).then(() => {
