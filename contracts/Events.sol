@@ -2,6 +2,8 @@ pragma solidity ^0.4.11;
 
 contract Events {
 
+    uint eventCounter;
+
     address public organizer;
 
     mapping (uint => Event) public events;
@@ -20,6 +22,7 @@ contract Events {
     }
 
     function Events() {
+        eventCounter = 0;
         organizer = tx.origin;
     }
 
@@ -38,9 +41,10 @@ contract Events {
         _;
     }
 
-    function create(uint eventId, uint requiredFee, uint startTime, uint deadline) onlyByOrganizer {
-        require(!events[eventId].exists);
-        events[eventId] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline});
+    function create(uint requiredFee, uint startTime, uint deadline) onlyByOrganizer {
+        eventCounter = eventCounter + 1;
+        require(!events[eventCounter].exists);
+        events[eventCounter] = Event({exists: true, requiredFee: requiredFee, startOfEvent: startTime, deadline: deadline});
     }
 
     function feeOf(uint eventId) eventExists(eventId) returns (uint) {

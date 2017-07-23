@@ -9,7 +9,6 @@ contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
     let PARTICIPANT = accounts[1];
-    let PARTICIPANT3 = accounts[3];
 
     let EVENT_ID = 1;
     let ZERO_FEE_EVENT_ID = 2;
@@ -35,7 +34,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
+            return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -49,7 +48,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
+            return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -63,7 +62,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(ZERO_FEE_EVENT_ID, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
+            return eventContract.create(0, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
                 from: ORGANIZER
             });
         }).then(() => {
