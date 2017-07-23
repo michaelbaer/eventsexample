@@ -10,7 +10,6 @@
   "devDependencies": {
     "ethereumjs-testrpc": "4.0.0",
     "http-server": "0.10.0",
-    "js-sha3": "^0.6.1",
     "truffle": "3.4.3"
   }
 }

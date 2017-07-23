@@ -1,5 +1,4 @@
 var Events = artifacts.require("./Events.sol");
-keccak_256 = require('js-sha3').keccak_256;
 
 let assertException = function(error) {
   if (error.toString().indexOf("invalid opcode") == -1) {
@@ -10,7 +9,6 @@ contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
     let PARTICIPANT = accounts[1];
-    let PARTICIPANT3 = accounts[3];
 
     let EVENT_ID = 1;
     let ZERO_FEE_EVENT_ID = 2;
@@ -18,10 +16,6 @@ contract('Events', function(accounts) {
     let MISSED_EVENT_ID = 4;
 
     let REQUIRED_FEE = 10;
-
-    let SECRET = 'This is top secret';
-    // need to add '0x' to make it a hex before passing to contract
-    let HASHED_SECRET = '0x' + keccak_256(SECRET);
 
     // one event before cancellation deadline, one event after
     let START_OF_EVENT_IN_20_DAYS = Date.now() / 1000 + 20*24*3600;
@@ -40,11 +34,13 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
+            return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.feeOf.call(EVENT_ID);
+            return eventContract.eventCounter.call();
+        }).then(eventId => {
+            return eventContract.feeOf.call(eventId);
         }).then(fee => {
             assert.equal(fee, REQUIRED_FEE);
         })
@@ -54,7 +50,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
+            return eventContract.create(REQUIRED_FEE, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
                 from: PARTICIPANT
             });
         }).then(function() {
@@ -68,7 +64,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(ZERO_FEE_EVENT_ID, 0, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
+            return eventContract.create(0, START_OF_EVENT_IN_20_DAYS, DEADLINE_IN_DAYS, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -189,7 +185,7 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.create(MISSED_EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, HASHED_SECRET, {
+            return eventContract.create(MISSED_EVENT_ID, REQUIRED_FEE, START_OF_EVENT_IN_10_DAYS, DEADLINE_IN_DAYS, {
                 from: ORGANIZER
             });
         }).then(() => {
@@ -208,44 +204,4 @@ contract('Events', function(accounts) {
         })
     })
 
-    it('participants get refund when providing the correct event secret', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.book(EVENT_ID, {
-                from: PARTICIPANT3,
-                value: REQUIRED_FEE
-            });
-        }).then(contract => {
-            return eventContract.verifyAttendance(EVENT_ID, SECRET, {
-                from: PARTICIPANT3
-            });
-        }).then(() => {
-            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT3, {
-                from: PARTICIPANT3
-            });
-        }).then(booking => {
-            assert.equal(false, booking[0]);
-            assert.equal(0, booking[1]);
-        })
-    })
-
-    it('participants get no refund when providing the wrong event secret', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.book(EVENT_ID, {
-                from: PARTICIPANT3,
-                value: REQUIRED_FEE
-            });
-        }).then(contract => {
-            return eventContract.verifyAttendance(EVENT_ID, 'wrong', {
-                from: PARTICIPANT3
-            });
-        }).then(function() {
-            assert(false, 'verifyAttendance() was supposed to throw but did not');
-        }).catch(function(error) {
-            assertException(error)
-        })
-    })
 });
