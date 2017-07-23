@@ -60,22 +60,21 @@ contract Events {
         return (p.registered, p.payment);
     }
 
-    function cancelAttendance(uint eventId) {
+    function cancelAttendance(uint eventId) participantIsRegistered(eventId, msg.sender) {
+        Event eventToRefund = events[eventId];
+        require(now <= eventToRefund.startOfEvent - eventToRefund.deadline * 1 days);
         performRefund(eventId, msg.sender);
     }
 
-    function performRefund(uint eventId, address participant) participantIsRegistered(eventId, participant) internal {
+    function performRefund(uint eventId, address participant) internal {
         Event eventToRefund = events[eventId];
-        // refund by cancellation in time
-        require(now <= eventToRefund.startOfEvent - eventToRefund.deadline * 1 days);
         uint amount = eventToRefund.participants[participant].payment;
         eventToRefund.participants[participant].payment = 0;
         eventToRefund.participants[participant].registered = false;
-
         participant.transfer(amount);
     }
 
-    function verifyAttendance(uint eventId) {
+    function verifyAttendance(uint eventId, address participant) participantIsRegistered(eventId, participant) {
         performRefund(eventId, msg.sender);
     }
 }
