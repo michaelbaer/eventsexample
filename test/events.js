@@ -1,11 +1,15 @@
 var Events = artifacts.require("./Events.sol");
 keccak_256 = require('js-sha3').keccak_256;
 
+let assertException = function(error) {
+  if (error.toString().indexOf("invalid opcode") == -1) {
+    assert(false, error.toString());
+  }
+}
 contract('Events', function(accounts) {
 
     let ORGANIZER = accounts[0];
     let PARTICIPANT = accounts[1];
-    let PARTICIPANT2 = accounts[2];
     let PARTICIPANT3 = accounts[3];
 
     let EVENT_ID = 1;
@@ -40,11 +44,7 @@ contract('Events', function(accounts) {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.exists.call(EVENT_ID);
-        }).then(exists => {
-          assert.equal(true, exists);
-        }).then(() => {
-            return eventContract.fee.call(EVENT_ID);
+            return eventContract.feeOf.call(EVENT_ID);
         }).then(fee => {
             assert.equal(fee, REQUIRED_FEE);
         })
@@ -60,9 +60,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "create() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -74,7 +72,7 @@ contract('Events', function(accounts) {
                 from: ORGANIZER
             });
         }).then(() => {
-            return eventContract.fee.call(ZERO_FEE_EVENT_ID);
+            return eventContract.feeOf.call(ZERO_FEE_EVENT_ID);
         }).then(fee => {
             assert.equal(0, fee);
         })
@@ -89,12 +87,12 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT
             });
-        }).then(myBooking => {
-            assert.equal(true, myBooking[0]);
-            assert.equal(REQUIRED_FEE, myBooking[1]);
+        }).then(booking => {
+            assert.equal(true, booking[0]);
+            assert.equal(REQUIRED_FEE, booking[1]);
         })
     })
 
@@ -109,9 +107,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "book() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -126,17 +122,15 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "book() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
-    it('organizer can see other participants', () => {
+    it('users can see other participants', () => {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.anyBooking.call(EVENT_ID, PARTICIPANT, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: ORGANIZER
             });
         }).then(booking => {
@@ -145,36 +139,20 @@ contract('Events', function(accounts) {
         })
     })
 
-    it('other users can not see participants', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.anyBooking.call(EVENT_ID, PARTICIPANT, {
-                from: PARTICIPANT2
-            });
-        }).then(function() {
-            assert(false, "booked() was supposed to throw but did not");
-        }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
-        })
-    })
-
     it('participants can unbook', () => {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.refundMeThroughCancellation(EVENT_ID, {
+            return eventContract.cancelAttendance(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT, {
                 from: PARTICIPANT
             });
-        }).then(myBooking => {
-            assert.equal(false, myBooking[0]);
-            assert.equal(0, myBooking[1]);
+        }).then(booking => {
+            assert.equal(false, booking[0]);
+            assert.equal(0, booking[1]);
         })
     })
 
@@ -182,58 +160,13 @@ contract('Events', function(accounts) {
         let eventContract;
         return Events.deployed().then(contract => {
             eventContract = contract;
-            return eventContract.refundMeThroughCancellation(EVENT_ID, {
+            return eventContract.cancelAttendance(EVENT_ID, {
                 from: PARTICIPANT
             });
         }).then(function() {
             assert(false, "unbookMe() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
-        });
-    })
-
-    it('organizer can unbook anyone', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.book(EVENT_ID, {
-                from: PARTICIPANT,
-                value: REQUIRED_FEE
-            });
-        }).then(() => {
-            return eventContract.refundParticipantThroughCancellation(EVENT_ID, PARTICIPANT, {
-                from: ORGANIZER
-            });
-        }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
-                from: PARTICIPANT
-            });
-        }).then(myBooking => {
-            assert.equal(false, myBooking[0]);
-            assert.equal(0, myBooking[1]);
-        })
-    })
-
-    it('users can not unbook other users', () => {
-        let eventContract;
-        return Events.deployed().then(contract => {
-            eventContract = contract;
-            return eventContract.book(EVENT_ID, {
-                from: PARTICIPANT,
-                value: REQUIRED_FEE
-            });
-        }).then(() => {
-            return eventContract.refundParticipantThroughCancellation.call(EVENT_ID, PARTICIPANT, {
-                from: PARTICIPANT2
-            });
-        }).then(function() {
-            assert(false, "refundThroughCancellation() was supposed to throw but did not");
-        }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         });
     })
 
@@ -248,9 +181,7 @@ contract('Events', function(accounts) {
         }).then(function() {
             assert(false, "booked() was supposed to throw but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         })
     })
 
@@ -267,15 +198,13 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(() => {
-            return eventContract.refundParticipantThroughCancellation(MISSED_EVENT_ID, PARTICIPANT, {
-                from: ORGANIZER
+            return eventContract.cancelAttendance(MISSED_EVENT_ID, {
+                from: PARTICIPANT
             });
         }).then(function() {
             assert(false, "refundThroughCancellation() was supposed to throw due to the missed deadline but did not");
         }).catch(function(error) {
-            if (error.toString().indexOf("invalid JUMP") == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         })
     })
 
@@ -288,16 +217,16 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(contract => {
-            return eventContract.refundThroughAttendance(EVENT_ID, SECRET, {
+            return eventContract.verifyAttendance(EVENT_ID, SECRET, {
                 from: PARTICIPANT3
             });
         }).then(() => {
-            return eventContract.myBooking.call(EVENT_ID, {
+            return eventContract.bookingFor.call(EVENT_ID, PARTICIPANT3, {
                 from: PARTICIPANT3
             });
-        }).then(myBooking => {
-            assert.equal(false, myBooking[0]);
-            assert.equal(0, myBooking[1]);
+        }).then(booking => {
+            assert.equal(false, booking[0]);
+            assert.equal(0, booking[1]);
         })
     })
 
@@ -310,15 +239,13 @@ contract('Events', function(accounts) {
                 value: REQUIRED_FEE
             });
         }).then(contract => {
-            return eventContract.refundThroughAttendance(EVENT_ID, 'wrong', {
+            return eventContract.verifyAttendance(EVENT_ID, 'wrong', {
                 from: PARTICIPANT3
             });
         }).then(function() {
-            assert(false, 'refundThroughAttendance() was supposed to throw but did not');
+            assert(false, 'verifyAttendance() was supposed to throw but did not');
         }).catch(function(error) {
-            if (error.toString().indexOf('invalid JUMP') == -1) {
-                assert(false, error.toString());
-            }
+            assertException(error)
         })
     })
 });
